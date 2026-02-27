@@ -1,634 +1,1206 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>You're Still Here.</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="icon" type="image/png" href="https://raw.githubusercontent.com/GalazySide/You-are-still-here./main/SPOILER_dqcQKkA.png">
-<style>
-  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-  html, body {
-    width:100%; height:100%;
-    background:#000;
-    color:#e0e0e0;
-    font-family: 'Courier New', Courier, monospace;
-    overflow:hidden;
-    image-rendering:pixelated;
-    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 16 16"><g stroke="%23fff" stroke-width="1.5"><line x1="8" y1="1" x2="8" y2="15"/><line x1="1" y1="8" x2="15" y2="8"/></g></svg>') 8 8, crosshair;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucas — Roblox Creator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 
-  #vignette { position:fixed; inset:0; pointer-events:none; background: radial-gradient(circle at 50% 50%, transparent 40%, rgba(0,0,0,0.30) 70%); z-index:9; }
+    <style>
+        /* ─── RESET & BASE ─────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
 
-  #noise {
-    position:fixed; inset:0; pointer-events:none;
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="5" /><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.12 0"/></filter><rect width="100%" height="100%" filter="url(%23n)" opacity="0.11"/></svg>');
-    animation: noiseMove 0.4s steps(2) infinite; mix-blend-mode:screen; z-index:10;
-  }
-  @keyframes noiseMove { 0%{transform:translate(0,0)} 100%{transform:translate(-8%,-12%)} }
+        :root {
+            --bg:       #07070a;
+            --surface:  #0f0f15;
+            --border:   rgba(255,255,255,0.07);
+            --accent:   #a855f7;
+            --accent2:  #7c3aed;
+            --glow:     rgba(168,85,247,0.35);
+            --text:     #f0eeff;
+            --muted:    rgba(240,238,255,0.45);
+            --red:      #f87171;
+            --green:    #34d399;
+        }
 
-  #container { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:10; pointer-events:none; }
-  #text {
-    font-size: clamp(20px, 3.5vw, 32px);
-    letter-spacing:2px; text-shadow:0 0 10px #fff3;
-    pointer-events:none; transition: transform 0.08s linear, filter 0.4s;
-    text-align:center; line-height:1.4;
-  }
-  #text.glitch { animation: glitch 0.6s infinite; filter: brightness(1.3) contrast(1.4); }
-  @keyframes glitch {
-    0%,100%{transform:translate(0)} 20%{transform:translate(-3px,2px)} 40%{transform:translate(3px,-2px)}
-    60%{transform:translate(-2px,1px)} 80%{transform:translate(2px,-1px)}
-  }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            cursor: none;
+        }
 
-  #ghost {
-    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-    font-size: clamp(22px, 4vw, 36px); color:#fff; text-shadow:0 0 20px #fff8;
-    opacity:0; pointer-events:none; z-index:12; white-space:pre; text-align:center;
-  }
+        /* ─── CUSTOM CURSOR ────────────────────────────────── */
+        #cursor-dot, #cursor-ring {
+            position: fixed; top: 0; left: 0; pointer-events: none;
+            z-index: 9999; border-radius: 50%; transform: translate(-50%,-50%);
+            transition: opacity 0.3s;
+        }
+        #cursor-dot {
+            width: 6px; height: 6px;
+            background: var(--accent);
+        }
+        #cursor-ring {
+            width: 36px; height: 36px;
+            border: 1.5px solid rgba(168,85,247,0.5);
+            transition: width 0.2s, height 0.2s, border-color 0.2s;
+        }
+        @media (pointer: coarse) {
+            #cursor-dot, #cursor-ring { display: none; }
+            body { cursor: auto; }
+        }
 
-  #maze { position:absolute; inset:0; display:none; z-index:6; cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 16 16"><g stroke="%23fff" stroke-width="1.5"><line x1="8" y1="1" x2="8" y2="15"/><line x1="1" y1="8" x2="15" y2="8"/></g></svg>') 8 8, crosshair; }
+        /* ─── NOISE TEXTURE ────────────────────────────────── */
+        body::before {
+            content: '';
+            position: fixed; inset: 0; z-index: 0;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            opacity: 0.025;
+        }
 
-  #startPoint, #endPoint {
-    position:absolute; width:14px; height:14px; border-radius:50%;
-    background:#fff; box-shadow:0 0 20px #fff, 0 0 40px #fffa;
-    display:none; z-index:8;
-  }
-  #endPoint.pulse { animation: pulse 1.6s infinite; }
-  @keyframes pulse {
-    0% { box-shadow: 0 0 20px #fff, 0 0 40px #fffa; }
-    50% { box-shadow: 0 0 36px #fff, 0 0 80px #fff8; }
-    100% { box-shadow: 0 0 20px #fff, 0 0 40px #fffa; }
-  }
+        /* ─── SCROLLBAR ────────────────────────────────────── */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--accent2); border-radius: 4px; }
 
-  #skipBtn {
-    position: fixed; bottom: 30px; right: 40px;
-    padding: 12px 24px; background: #111; color: #e33; border: 1px solid #600;
-    font-family: inherit; font-size: 15px; cursor: pointer; z-index: 20;
-    opacity: 0; transition: opacity 0.6s, transform 0.2s;
-    pointer-events: none; user-select: none; border-radius: 4px;
-  }
-  #skipBtn.visible { opacity: 0.8; pointer-events: auto; }
-  #skipBtn:hover { opacity: 1; transform: scale(1.08); background: #1a0000; }
-</style>
+        /* ─── REVEAL ANIMATIONS ────────────────────────────── */
+        .reveal {
+            opacity: 0; transform: translateY(32px);
+            transition: opacity 0.7s cubic-bezier(.16,1,.3,1), transform 0.7s cubic-bezier(.16,1,.3,1);
+        }
+        .reveal.visible { opacity: 1; transform: none; }
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        .reveal-delay-3 { transition-delay: 0.3s; }
+        .reveal-delay-4 { transition-delay: 0.4s; }
+
+        /* ─── TYPOGRAPHY ───────────────────────────────────── */
+        h1, h2, h3, .syne { font-family: 'Syne', sans-serif; }
+        .mono { font-family: 'DM Mono', monospace; }
+
+        /* ─── NAVBAR ───────────────────────────────────────── */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            padding: 1.25rem 2.5rem;
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(7,7,10,0.7); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            transition: background 0.3s;
+        }
+        .nav-logo {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.2rem; font-weight: 700;
+            letter-spacing: -0.03em;
+            display: flex; align-items: center; gap: 0.6rem;
+        }
+        .nav-logo-icon {
+            width: 32px; height: 32px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem; font-weight: 800;
+            box-shadow: 0 0 20px var(--glow);
+        }
+        .nav-links { display: flex; gap: 2.5rem; }
+        .nav-links a {
+            font-size: 0.8rem; font-weight: 500; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--muted);
+            text-decoration: none; transition: color 0.2s;
+            position: relative;
+        }
+        .nav-links a::after {
+            content: ''; position: absolute; bottom: -3px; left: 0;
+            width: 0; height: 1px; background: var(--accent);
+            transition: width 0.3s;
+        }
+        .nav-links a:hover { color: var(--text); }
+        .nav-links a:hover::after { width: 100%; }
+        .nav-cta {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.75rem; color: var(--accent); text-decoration: none;
+            border: 1px solid rgba(168,85,247,0.3); padding: 0.5rem 1.2rem;
+            border-radius: 6px; transition: all 0.2s; background: rgba(168,85,247,0.05);
+        }
+        .nav-cta:hover { background: rgba(168,85,247,0.15); border-color: var(--accent); }
+        /* Hamburger for mobile */
+        .nav-hamburger {
+            display: none; flex-direction: column; gap: 5px; cursor: pointer;
+            padding: 4px; background: none; border: none;
+        }
+        .nav-hamburger span {
+            width: 22px; height: 2px; background: var(--text); border-radius: 2px;
+            transition: all 0.3s;
+        }
+        .nav-mobile-menu {
+            display: none; position: fixed; top: 64px; left: 0; right: 0; z-index: 99;
+            background: rgba(7,7,10,0.97); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem; flex-direction: column; gap: 1.2rem;
+        }
+        .nav-mobile-menu.open { display: flex; }
+        .nav-mobile-menu a {
+            font-size: 1rem; font-weight: 500; color: var(--muted);
+            text-decoration: none; transition: color 0.2s;
+            letter-spacing: 0.08em; text-transform: uppercase;
+        }
+        .nav-mobile-menu a:hover { color: var(--accent); }
+
+        /* ─── HERO ─────────────────────────────────────────── */
+        .hero {
+            min-height: 100vh; display: flex; align-items: center;
+            position: relative; overflow: hidden;
+            padding: 7rem 2.5rem 4rem;
+        }
+        .hero-mesh {
+            position: absolute; inset: 0; z-index: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 60% 40%, rgba(124,58,237,0.18) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 40% at 20% 70%, rgba(168,85,247,0.1) 0%, transparent 60%);
+        }
+        .hero-grid {
+            position: absolute; inset: 0; z-index: 0;
+            background-image:
+                linear-gradient(rgba(168,85,247,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(168,85,247,0.04) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: gridDrift 20s linear infinite;
+        }
+        @keyframes gridDrift {
+            from { background-position: 0 0; }
+            to { background-position: 60px 60px; }
+        }
+        .hero-inner {
+            position: relative; z-index: 1;
+            max-width: 1400px; margin: 0 auto; width: 100%;
+            display: grid; grid-template-columns: 1fr auto; gap: 4rem; align-items: center;
+        }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 0.6rem;
+            font-family: 'DM Mono', monospace; font-size: 0.72rem;
+            color: var(--accent); letter-spacing: 0.1em;
+            border: 1px solid rgba(168,85,247,0.2); padding: 0.45rem 1rem;
+            border-radius: 100px; margin-bottom: 2rem;
+            background: rgba(168,85,247,0.05);
+        }
+        .hero-badge-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--green);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(52,211,153,0.5); }
+            50% { box-shadow: 0 0 0 6px rgba(52,211,153,0); }
+        }
+        .hero-title {
+            font-size: clamp(4rem, 9vw, 8rem);
+            font-weight: 800; letter-spacing: -0.04em;
+            line-height: 0.9;
+            margin-bottom: 1.5rem;
+        }
+        .hero-title span { display: block; }
+        .hero-title .accent-word {
+            -webkit-text-stroke: 1px rgba(168,85,247,0.5);
+            color: transparent;
+            transition: color 0.3s, -webkit-text-stroke 0.3s;
+        }
+        .hero-title .accent-word:hover { color: var(--accent); -webkit-text-stroke: 0; }
+        .hero-aka {
+            display: flex; align-items: center; gap: 1rem;
+            font-size: 1.1rem; color: var(--muted); margin-bottom: 2rem;
+        }
+        .hero-aka strong { color: var(--accent); font-family: 'DM Mono', monospace; }
+        .hero-aka-line { height: 1px; width: 40px; background: var(--border); }
+        .hero-desc {
+            font-size: 1.05rem; color: var(--muted); max-width: 440px;
+            line-height: 1.75; margin-bottom: 2.5rem; font-weight: 300;
+        }
+        .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 3rem; }
+        .btn-primary {
+            padding: 0.85rem 2rem; border-radius: 8px; font-weight: 600;
+            font-size: 0.9rem; text-decoration: none; display: inline-flex;
+            align-items: center; gap: 0.6rem;
+            background: var(--accent); color: #fff;
+            transition: all 0.25s; box-shadow: 0 0 30px rgba(168,85,247,0.3);
+        }
+        .btn-primary:hover { background: #b96ef9; box-shadow: 0 0 50px rgba(168,85,247,0.5); transform: translateY(-2px); }
+        .btn-outline {
+            padding: 0.85rem 2rem; border-radius: 8px; font-weight: 500;
+            font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.6rem;
+            border: 1px solid var(--border); color: var(--text);
+            transition: all 0.25s;
+        }
+        .btn-outline:hover { border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.03); transform: translateY(-2px); }
+        .hero-meta {
+            display: flex; gap: 2.5rem; flex-wrap: wrap;
+        }
+        .hero-meta-label {
+            font-family: 'DM Mono', monospace; font-size: 0.65rem;
+            color: var(--accent); letter-spacing: 0.15em; text-transform: uppercase;
+            margin-bottom: 0.3rem;
+        }
+        .hero-meta-val { font-size: 0.9rem; color: var(--text); }
+        .hero-meta-val a { color: inherit; text-decoration: none; transition: color 0.2s; }
+        .hero-meta-val a:hover { color: var(--accent); }
+
+        /* Hero card */
+        .hero-card {
+            background: var(--surface);
+            border: 1px solid var(--border); border-radius: 20px; padding: 1rem;
+            width: 280px;
+        }
+        .hero-card-img {
+            width: 100%; aspect-ratio: 3/4; object-fit: cover;
+            border-radius: 12px; margin-bottom: 1rem;
+        }
+        .hero-card-tag {
+            font-family: 'DM Mono', monospace; font-size: 0.7rem;
+            color: var(--accent); letter-spacing: 0.1em; margin-bottom: 0.4rem;
+        }
+        .hero-card-name { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; }
+        .hero-card-sub { font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem; }
+        .hero-card-footer {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border);
+            font-size: 0.75rem; color: var(--muted);
+        }
+        .hero-card-status { display: flex; align-items: center; gap: 0.4rem; }
+        .hero-card-status-dot {
+            width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+            box-shadow: 0 0 8px var(--green);
+        }
+
+        /* ─── STATS BAR ────────────────────────────────────── */
+        .stats-bar {
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+            padding: 2.5rem 2.5rem;
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            max-width: 1400px; margin: 0 auto;
+        }
+        .stat-item {
+            padding: 0 2rem; border-right: 1px solid var(--border);
+            text-align: center;
+        }
+        .stat-item:last-child { border-right: none; }
+        .stat-num {
+            font-family: 'Syne', sans-serif;
+            font-size: 3rem; font-weight: 800; letter-spacing: -0.04em;
+            color: var(--accent); line-height: 1;
+        }
+        .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 0.4rem; }
+
+        /* ─── SECTION LAYOUT ───────────────────────────────── */
+        section { max-width: 1400px; margin: 0 auto; padding: 7rem 2.5rem; }
+        .section-tag {
+            font-family: 'DM Mono', monospace; font-size: 0.7rem;
+            color: var(--accent); letter-spacing: 0.18em; text-transform: uppercase;
+            margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.8rem;
+        }
+        .section-tag::after { content: ''; flex: 1; max-width: 60px; height: 1px; background: rgba(168,85,247,0.3); }
+        .section-title {
+            font-size: clamp(2.2rem, 5vw, 4rem);
+            font-weight: 800; letter-spacing: -0.04em; line-height: 1;
+            margin-bottom: 1rem;
+        }
+
+        /* ─── ABOUT ────────────────────────────────────────── */
+        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: center; }
+        .about-text { font-size: 1rem; color: var(--muted); line-height: 1.85; }
+        .about-text p + p { margin-top: 1.4rem; }
+        .about-text strong { color: var(--text); font-weight: 500; }
+        .about-text .hl { color: var(--accent); }
+
+        /* ── Avatar image area ── */
+        .avatar-wrap {
+            position: relative; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        .avatar-frame {
+            position: relative; width: 100%; max-width: 340px; margin: 0 auto;
+        }
+        .avatar-frame::before {
+            content: '';
+            position: absolute; inset: -12px;
+            border: 1px dashed rgba(168,85,247,0.25);
+            border-radius: 24px;
+        }
+        .avatar-img {
+            width: 100%; border-radius: 18px;
+            display: block;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            min-height: 340px;
+            object-fit: cover;
+        }
+        /* Placeholder shown when no real image */
+        .avatar-placeholder {
+            width: 100%; min-height: 340px; border-radius: 18px;
+            background: var(--surface);
+            border: 1px dashed rgba(168,85,247,0.3);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 1rem;
+            color: var(--muted); font-size: 0.85rem;
+            font-family: 'DM Mono', monospace; text-align: center;
+            padding: 2rem;
+        }
+        .avatar-placeholder-icon { font-size: 3.5rem; opacity: 0.4; }
+        .avatar-badge {
+            position: absolute; bottom: -1.5rem; right: -1rem;
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 12px; padding: 0.9rem 1.2rem;
+            font-size: 0.82rem; display: flex; align-items: center; gap: 0.8rem;
+            white-space: nowrap;
+        }
+        .avatar-badge-wave { font-size: 1.5rem; animation: wave 2s infinite; display: inline-block; }
+        @keyframes wave {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(20deg); }
+            75% { transform: rotate(-10deg); }
+        }
+
+        /* ─── SKILLS ───────────────────────────────────────── */
+        .skills-full { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .skills-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); margin-top: 4rem; }
+        .skill-card {
+            background: var(--surface); padding: 2.5rem 2rem;
+            transition: background 0.3s;
+            position: relative; overflow: hidden;
+        }
+        .skill-card::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(circle at top left, rgba(168,85,247,0.08), transparent 70%);
+            opacity: 0; transition: opacity 0.4s;
+        }
+        .skill-card:hover { background: #141420; }
+        .skill-card:hover::before { opacity: 1; }
+        .skill-icon { font-size: 2rem; margin-bottom: 1.4rem; display: block; }
+        .skill-name { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .skill-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+        /* ─── SHOWCASE ─────────────────────────────────────── */
+        .project-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 4rem; }
+        .project-card {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 20px;
+            overflow: hidden;
+            transition: transform 0.4s cubic-bezier(.16,1,.3,1), box-shadow 0.4s, border-color 0.3s;
+        }
+        .project-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 40px rgba(168,85,247,0.1);
+            border-color: rgba(168,85,247,0.2);
+        }
+        .project-card-top { padding: 2rem 2rem 0; }
+        .project-meta {
+            display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem;
+        }
+        .project-year {
+            font-family: 'DM Mono', monospace; font-size: 0.7rem;
+            color: var(--accent); letter-spacing: 0.1em;
+        }
+        .project-tag {
+            font-size: 0.7rem; padding: 0.3rem 0.8rem; border-radius: 100px;
+            font-family: 'DM Mono', monospace;
+        }
+        .tag-ui { background: rgba(168,85,247,0.1); color: var(--accent); border: 1px solid rgba(168,85,247,0.2); }
+        .tag-horror { background: rgba(248,113,113,0.1); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+        .project-title { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .project-desc { font-size: 0.875rem; color: var(--muted); line-height: 1.65; }
+        .video-container {
+            position: relative; padding-top: 56.25%; margin: 1.5rem 0; overflow: hidden;
+        }
+        .video-container iframe {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        }
+        .project-gallery {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+            padding: 0 0 2rem;
+        }
+        .gallery-img {
+            aspect-ratio: 16/9; object-fit: cover; width: 100%;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.2s;
+            filter: saturate(0.8);
+        }
+        .gallery-img:hover { opacity: 0.85; transform: scale(1.02); filter: saturate(1); }
+        .gallery-note {
+            text-align: center; font-size: 0.65rem;
+            color: rgba(255,255,255,0.2); letter-spacing: 0.1em;
+            padding-bottom: 1.5rem; font-family: 'DM Mono', monospace;
+        }
+
+        /* ─── EASTER EGG SCRIPT SECTION ─────────────────────── */
+        .easter-full {
+            background: #080810; border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+        .easter-inner { text-align: center; }
+        .easter-header {
+            display: flex; flex-direction: column; align-items: center; gap: 1rem;
+            margin-bottom: 2.5rem;
+        }
+        .easter-title-row {
+            display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+            justify-content: center;
+        }
+        .easter-egg-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            font-family: 'DM Mono', monospace; font-size: 0.68rem;
+            background: rgba(248,113,113,0.08); color: var(--red);
+            border: 1px solid rgba(248,113,113,0.2);
+            padding: 0.3rem 0.9rem; border-radius: 100px;
+            letter-spacing: 0.1em;
+        }
+        .easter-subtitle {
+            font-size: 0.92rem; color: var(--muted); max-width: 520px;
+            line-height: 1.7; margin: 0 auto;
+        }
+        .script-box-wrap {
+            position: relative; max-width: 860px; margin: 0 auto;
+            text-align: left;
+        }
+        .script-box-header {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #0d0d1a; border: 1px solid var(--border);
+            border-bottom: none;
+            border-radius: 12px 12px 0 0;
+            padding: 0.75rem 1.2rem;
+        }
+        .script-box-dots { display: flex; gap: 6px; }
+        .script-box-dots span {
+            width: 11px; height: 11px; border-radius: 50%;
+        }
+        .dot-r { background: #f87171; }
+        .dot-y { background: #fbbf24; }
+        .dot-g { background: #34d399; }
+        .script-box-label {
+            font-family: 'DM Mono', monospace; font-size: 0.68rem;
+            color: var(--muted); letter-spacing: 0.12em;
+        }
+        .script-textarea {
+            width: 100%; min-height: 260px;
+            background: #090914; border: 1px solid var(--border);
+            color: #c9b8ff; font-family: 'DM Mono', monospace; font-size: 0.82rem;
+            line-height: 1.75; padding: 1.4rem 1.5rem;
+            resize: vertical; outline: none;
+            border-radius: 0 0 12px 12px;
+            transition: border-color 0.3s;
+        }
+        .script-textarea:focus { border-color: rgba(168,85,247,0.4); }
+        .script-textarea::placeholder { color: rgba(168,85,247,0.25); }
+        .script-actions {
+            display: flex; gap: 1rem; margin-top: 1.2rem;
+            justify-content: flex-end; flex-wrap: wrap;
+        }
+        .btn-copy-script {
+            display: inline-flex; align-items: center; gap: 0.6rem;
+            font-family: 'DM Mono', monospace; font-size: 0.8rem;
+            padding: 0.7rem 1.5rem; border-radius: 8px; cursor: pointer;
+            border: 1px solid rgba(168,85,247,0.35);
+            background: rgba(168,85,247,0.08); color: var(--accent);
+            transition: all 0.25s;
+        }
+        .btn-copy-script:hover { background: rgba(168,85,247,0.18); border-color: var(--accent); transform: translateY(-2px); }
+        .btn-copy-script.copied { border-color: var(--green); color: var(--green); background: rgba(52,211,153,0.08); }
+        .script-hint {
+            display: flex; align-items: flex-start; gap: 0.8rem;
+            margin-top: 1.5rem; padding: 1rem 1.4rem;
+            background: rgba(168,85,247,0.05); border: 1px solid rgba(168,85,247,0.1);
+            border-radius: 10px; text-align: left;
+        }
+        .script-hint-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
+        .script-hint-text { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+        .script-hint-text strong { color: var(--accent); }
+
+        /* ─── LIGHTBOX ─────────────────────────────────────── */
+        .lightbox {
+            position: fixed; inset: 0; z-index: 999;
+            background: rgba(0,0,0,0.92); backdrop-filter: blur(16px);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s;
+        }
+        .lightbox.open { opacity: 1; pointer-events: all; }
+        .lightbox img {
+            max-width: 90vw; max-height: 85vh; object-fit: contain;
+            border-radius: 12px;
+            transform: scale(0.95); transition: transform 0.3s;
+        }
+        .lightbox.open img { transform: scale(1); }
+        .lightbox-close {
+            position: absolute; top: 1.5rem; right: 2rem;
+            font-size: 2rem; color: var(--muted); cursor: pointer;
+            transition: color 0.2s;
+        }
+        .lightbox-close:hover { color: var(--text); }
+
+        /* ─── CONTACT ──────────────────────────────────────── */
+        .contact-full { background: #0a0a10; border-top: 1px solid var(--border); }
+        .contact-inner { text-align: center; }
+        .contact-cards { display: flex; gap: 1.5rem; justify-content: center; margin-top: 3.5rem; flex-wrap: wrap; }
+        .contact-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 16px; padding: 2.5rem 2.5rem;
+            text-align: center; text-decoration: none; color: var(--text);
+            transition: all 0.3s; min-width: 240px;
+            position: relative; overflow: hidden;
+        }
+        .contact-card::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(circle at center, rgba(168,85,247,0.08), transparent 70%);
+            opacity: 0; transition: opacity 0.4s;
+        }
+        .contact-card:hover { transform: translateY(-8px); border-color: rgba(168,85,247,0.3); }
+        .contact-card:hover::before { opacity: 1; }
+        .contact-card-icon { font-size: 2.5rem; margin-bottom: 1.2rem; display: block; line-height: 1; }
+        .contact-card-label { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .contact-card-val { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--accent); }
+        .contact-card-action { font-size: 0.72rem; color: var(--muted); margin-top: 1.5rem; display: block; transition: color 0.2s; }
+        .contact-card:hover .contact-card-action { color: var(--accent); }
+
+        /* ─── FOOTER ───────────────────────────────────────── */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 2rem 2.5rem;
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.78rem; color: var(--muted);
+            max-width: 100%;
+        }
+        footer a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+        footer a:hover { color: var(--accent); }
+
+        /* ─── DIVIDER ──────────────────────────────────────── */
+        .divider { max-width: 100%; height: 1px; background: var(--border); }
+
+        /* ─── TOAST ────────────────────────────────────────── */
+        .toast {
+            position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(10px);
+            background: var(--surface); border: 1px solid rgba(168,85,247,0.3);
+            color: var(--text); padding: 0.8rem 1.5rem;
+            border-radius: 8px; font-size: 0.85rem;
+            font-family: 'DM Mono', monospace;
+            z-index: 9999; opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            display: flex; align-items: center; gap: 0.6rem;
+            max-width: 90vw; text-align: center;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* ─── RESPONSIVE ───────────────────────────────────── */
+        @media (max-width: 1024px) {
+            .hero-inner { grid-template-columns: 1fr; }
+            .hero-card { display: none; }
+            .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+            .skills-grid { grid-template-columns: repeat(2, 1fr); }
+            .project-grid { grid-template-columns: 1fr; }
+            .stats-bar { grid-template-columns: repeat(2, 1fr); }
+            .stat-item:nth-child(2) { border-right: none; }
+            .stat-item:nth-child(3) { border-top: 1px solid var(--border); }
+            .stat-item:nth-child(4) { border-top: 1px solid var(--border); border-right: none; }
+            .avatar-wrap { order: -1; }
+        }
+        @media (max-width: 768px) {
+            nav { padding: 1rem 1.2rem; }
+            .nav-links { display: none; }
+            .nav-hamburger { display: flex; }
+            .nav-cta { display: none; }
+            .hero { padding: 6rem 1.2rem 3rem; }
+            section { padding: 4rem 1.2rem; }
+            .stats-bar { grid-template-columns: repeat(2, 1fr); padding: 1.5rem 1.2rem; gap: 0; }
+            .stat-num { font-size: 2rem; }
+            .stat-item { padding: 1rem; }
+            .skills-grid { grid-template-columns: 1fr 1fr; }
+            .hero-title { font-size: clamp(3rem, 13vw, 5rem); }
+            .hero-meta { gap: 1.2rem; }
+            .hero-desc { font-size: 0.95rem; }
+            footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+            .contact-cards { flex-direction: column; align-items: center; }
+            .contact-card { width: 100%; max-width: 320px; min-width: unset; }
+            .section-title { font-size: clamp(2rem, 8vw, 3rem); }
+            .about-grid { gap: 2.5rem; }
+            .avatar-badge { position: relative; bottom: auto; right: auto; margin-top: 1.5rem; }
+            .script-actions { justify-content: center; }
+            .hero-actions { flex-direction: column; align-items: flex-start; }
+            .btn-primary, .btn-outline { width: 100%; justify-content: center; }
+        }
+        @media (max-width: 480px) {
+            .skills-grid { grid-template-columns: 1fr; }
+            .project-gallery { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
 </head>
 <body>
-<div id="vignette"></div>
-<div id="noise"></div>
-<div id="container"><div id="text">This page is empty.</div></div>
-<div id="ghost">Help me</div>
-<canvas id="maze"></canvas>
-<div id="startPoint"></div>
-<div id="endPoint"></div>
-<button id="skipBtn">skip waiting → start maze</button>
 
+<!-- Cursor (hidden on touch devices via CSS) -->
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+    <span class="lightbox-close" id="lightbox-close">✕</span>
+    <img id="lightbox-img" src="" alt="Showcase image">
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+    <i class="fa-solid fa-check" style="color:var(--green)"></i>
+    <span id="toast-msg">Copied!</span>
+</div>
+
+<!-- ── NAV ──────────────────────────────────────────────────── -->
+<nav>
+    <div class="nav-logo">
+        <div class="nav-logo-icon">L</div>
+        Lucas
+    </div>
+    <div class="nav-links">
+        <a href="#about">About</a>
+        <a href="#skills">Skills</a>
+        <a href="#showcase">Showcase</a>
+        <a href="#easter">Script</a>
+        <a href="#contact">Contact</a>
+    </div>
+    <a href="https://www.roblox.com/search/users?keyword=Galazyyyyyy" target="_blank" class="nav-cta">
+        @Galazyyyyyy
+    </a>
+    <!-- Mobile hamburger -->
+    <button class="nav-hamburger" id="hamburger" aria-label="Open menu">
+        <span></span><span></span><span></span>
+    </button>
+</nav>
+
+<!-- Mobile menu -->
+<div class="nav-mobile-menu" id="mobile-menu">
+    <a href="#about">About</a>
+    <a href="#skills">Skills</a>
+    <a href="#showcase">Showcase</a>
+    <a href="#easter">Script</a>
+    <a href="#contact">Contact</a>
+    <a href="https://www.roblox.com/search/users?keyword=Galazyyyyyy" target="_blank" style="color:var(--accent)">@Galazyyyyyy on Roblox →</a>
+</div>
+
+<!-- ── HERO ─────────────────────────────────────────────────── -->
+<header class="hero">
+    <div class="hero-mesh"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-inner">
+        <div>
+            <div class="hero-badge reveal">
+                <div class="hero-badge-dot"></div>
+                Available for projects
+            </div>
+            <h1 class="hero-title reveal reveal-delay-1">
+                <span>Luka</span>
+                <span class="accent-word">Amirejibi</span>
+            </h1>
+            <div class="hero-aka reveal reveal-delay-2">
+                <div class="hero-aka-line"></div>
+                Known as <strong>@Galazyyyyyy</strong> on Roblox
+            </div>
+            <p class="hero-desc reveal reveal-delay-2">
+                Roblox developer crafting immersive experiences through clean scripting, polished UI/UX, and detailed environmental design.
+            </p>
+            <div class="hero-actions reveal reveal-delay-3">
+                <a href="#showcase" class="btn-primary">
+                    View My Work <i class="fa-solid fa-arrow-down"></i>
+                </a>
+                <a href="#contact" class="btn-outline">
+                    Get in touch
+                </a>
+            </div>
+            <div class="hero-meta reveal reveal-delay-4">
+                <div class="hero-meta-item">
+                    <div class="hero-meta-label">Discord</div>
+                    <div class="hero-meta-val mono">Galazyyyyyy</div>
+                </div>
+                <div class="hero-meta-item">
+                    <div class="hero-meta-label">Email</div>
+                    <div class="hero-meta-val">
+                        <a href="mailto:Luka2006amirejibi@gmail.com">Luka2006amirejibi@gmail.com</a>
+                    </div>
+                </div>
+                <div class="hero-meta-item">
+                    <div class="hero-meta-label">Based in</div>
+                    <div class="hero-meta-val">Georgia 🇬🇪</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hero Card -->
+        <div class="hero-card reveal reveal-delay-2">
+            <img src="https://picsum.photos/id/1015/400/500" class="hero-card-img" alt="Lucas Roblox Creator">
+            <div class="hero-card-tag mono">// ROBLOX CREATOR</div>
+            <div class="hero-card-name">Luka Amirejibi</div>
+            <div class="hero-card-sub">aka Lucas · @Galazyyyyyy</div>
+            <div class="hero-card-footer">
+                <div class="hero-card-status">
+                    <div class="hero-card-status-dot"></div>
+                    Available
+                </div>
+                <span class="mono" style="font-size:0.7rem; color:var(--muted)">3+ yrs exp</span>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- ── STATS ────────────────────────────────────────────────── -->
+<div class="divider"></div>
+<div class="stats-bar">
+    <div class="stat-item reveal">
+        <div class="stat-num" data-target="3">0</div>
+        <div class="stat-label">Years Building</div>
+    </div>
+    <div class="stat-item reveal reveal-delay-1">
+        <div class="stat-num" data-target="20">0</div>
+        <div class="stat-label">Projects Shipped</div>
+    </div>
+    <div class="stat-item reveal reveal-delay-2">
+        <div class="stat-num" data-target="8">0</div>
+        <div class="stat-label">Skills Mastered</div>
+    </div>
+    <div class="stat-item reveal reveal-delay-3">
+        <div class="stat-num" data-target="100">0</div>
+        <div class="stat-label">Client Satisfaction %</div>
+    </div>
+</div>
+<div class="divider"></div>
+
+<!-- ── ABOUT ────────────────────────────────────────────────── -->
+<section id="about">
+    <div class="about-grid">
+
+        <!-- LEFT: Avatar image -->
+        <div class="avatar-wrap reveal">
+            <div class="avatar-frame">
+                <!--
+                    ▼ REPLACE THIS PLACEHOLDER with your actual Roblox avatar image.
+                      Export a waving screenshot from Roblox Studio or the Roblox site,
+                      upload it, and swap the src below.
+                      Recommended size: at least 680 × 700 px.
+
+                    Example:
+                    <img src="avatar-waving.png" alt="My Roblox avatar waving" class="avatar-img">
+
+                    Until you do, the placeholder below shows automatically.
+                -->
+                <div class="avatar-placeholder" id="avatar-placeholder">
+                    <span class="avatar-placeholder-icon">🧍</span>
+                    <div>
+                        <strong style="color:var(--text); display:block; margin-bottom:0.4rem">Your Roblox Avatar Here</strong>
+                        Replace this placeholder with your waving avatar screenshot.<br>
+                        Set <code style="color:var(--accent); font-size:0.78rem">src="your-avatar.png"</code> on the img tag above.
+                    </div>
+                </div>
+                <!-- Uncomment + fill in to show a real image:
+                <img src="YOUR_AVATAR_IMAGE.png" alt="Luka's Roblox avatar waving" class="avatar-img" id="avatar-real">
+                -->
+            </div>
+            <div class="avatar-badge">
+                <span class="avatar-badge-wave">👋</span>
+                <div>
+                    <div style="font-family:'Syne',sans-serif; font-weight:700; font-size:0.9rem">@Galazyyyyyy</div>
+                    <div style="font-size:0.72rem; color:var(--muted)">3+ years on Roblox</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Text -->
+        <div>
+            <div class="section-tag reveal">chapter_01</div>
+            <h2 class="section-title reveal reveal-delay-1">The creator behind<br>the experiences</h2>
+            <div class="about-text reveal reveal-delay-2">
+                <p>
+                    Hey — I'm <strong>Luka Amirejibi</strong>, better known as <span class="hl">@Galazyyyyyy</span> (display name Lucas) on Roblox. I've been building on the platform for over 3 years, obsessing over the details that make experiences feel <strong>premium</strong>.
+                </p>
+                <p>
+                    I specialize in <strong>scripting</strong>, <strong>advanced UI/UX design</strong>, and <strong>environmental building</strong>. From buttery-smooth TweenService animations and custom UI sound systems to optimized DataStores and clean explorer hierarchies — I build systems that just <em>feel</em> right.
+                </p>
+                <p>
+                    Whether it's a horror game's chilling main menu or a sleek modern interface with perfect micro-interactions, I love turning ideas into polished, scalable Roblox experiences that players remember.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── SKILLS ───────────────────────────────────────────────── -->
+<div class="skills-full">
+    <section id="skills">
+        <div class="section-tag reveal">chapter_02</div>
+        <h2 class="section-title reveal reveal-delay-1">What I master</h2>
+        <div class="skills-grid">
+            <div class="skill-card reveal">
+                <span class="skill-icon">🎨</span>
+                <div class="skill-name">UI Design</div>
+                <div class="skill-desc">Modern interfaces with perfect spacing, hierarchy, and visual polish.</div>
+            </div>
+            <div class="skill-card reveal reveal-delay-1">
+                <span class="skill-icon">✨</span>
+                <div class="skill-name">TweenService</div>
+                <div class="skill-desc">Smooth, cinematic animations and transitions that feel alive.</div>
+            </div>
+            <div class="skill-card reveal reveal-delay-2">
+                <span class="skill-icon">🔊</span>
+                <div class="skill-name">UI Sound Systems</div>
+                <div class="skill-desc">Immersive audio feedback wired perfectly to every interaction.</div>
+            </div>
+            <div class="skill-card reveal reveal-delay-3">
+                <span class="skill-icon">💾</span>
+                <div class="skill-name">DataStores</div>
+                <div class="skill-desc">Secure, efficient, and scalable player data systems.</div>
+            </div>
+            <div class="skill-card reveal">
+                <span class="skill-icon">📁</span>
+                <div class="skill-name">Explorer Structure</div>
+                <div class="skill-desc">Clean, scalable folder and module organisation you'll actually enjoy reading.</div>
+            </div>
+            <div class="skill-card reveal reveal-delay-1">
+                <span class="skill-icon">🛠️</span>
+                <div class="skill-name">Any System</div>
+                <div class="skill-desc">Tycoons, horror mechanics, RPG systems — if you can imagine it, I can build it.</div>
+            </div>
+            <div class="skill-card reveal reveal-delay-2">
+                <span class="skill-icon">🌲</span>
+                <div class="skill-name">Environmental Building</div>
+                <div class="skill-desc">Detailed, atmospheric maps that set the mood from the moment you load in.</div>
+            </div>
+            <div class="skill-card reveal reveal-delay-3">
+                <span class="skill-icon">🚀</span>
+                <div class="skill-name">Performance</div>
+                <div class="skill-desc">Optimised code and builds that run smoothly across all devices.</div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- ── SHOWCASE ──────────────────────────────────────────────── -->
+<section id="showcase">
+    <div class="section-tag reveal">chapter_03</div>
+    <h2 class="section-title reveal reveal-delay-1">Recent creations</h2>
+    <p class="reveal reveal-delay-2" style="color:var(--muted); font-size:0.9rem; max-width:380px; margin-top:0.5rem; line-height:1.7">
+        Videos + screenshots of my latest work. Swap in your real YouTube IDs and screenshots below.
+    </p>
+
+    <div class="project-grid">
+
+        <!-- Project 1 -->
+        <div class="project-card reveal">
+            <div class="project-card-top">
+                <div class="project-meta">
+                    <div>
+                        <div class="project-year mono">2025</div>
+                        <div class="project-title">Modern UI + Transitions</div>
+                    </div>
+                    <div class="project-tag tag-ui">UI / UX</div>
+                </div>
+                <p class="project-desc">
+                    A clean, modern Roblox UI kit with buttery TweenService animations, custom sound effects, and responsive scaling. Every pixel, intentional.
+                </p>
+            </div>
+            <div class="video-container">
+                <iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID_1"
+                        title="Modern UI Showcase"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen></iframe>
+            </div>
+            <div class="project-gallery">
+                <img src="https://picsum.photos/id/201/800/450" class="gallery-img" alt="UI Screenshot 1">
+                <img src="https://picsum.photos/id/237/800/450" class="gallery-img" alt="UI Screenshot 2">
+                <img src="https://picsum.photos/id/29/800/450"  class="gallery-img" alt="UI Screenshot 3">
+            </div>
+            <p class="gallery-note">REPLACE IMAGES WITH YOUR SCREENSHOTS</p>
+        </div>
+
+        <!-- Project 2 -->
+        <div class="project-card reveal reveal-delay-1">
+            <div class="project-card-top">
+                <div class="project-meta">
+                    <div>
+                        <div class="project-year mono">2024</div>
+                        <div class="project-title">Horror Game Main Menu</div>
+                    </div>
+                    <div class="project-tag tag-horror">Horror</div>
+                </div>
+                <p class="project-desc">
+                    Atmospheric horror main menu with custom dynamic lighting, particle effects, ambient audio and tense UI animations that set the mood instantly.
+                </p>
+            </div>
+            <div class="video-container">
+                <iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID_2"
+                        title="Horror Game Main Menu"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen></iframe>
+            </div>
+            <div class="project-gallery">
+                <img src="https://picsum.photos/id/160/800/450" class="gallery-img" alt="Horror Screenshot 1">
+                <img src="https://picsum.photos/id/142/800/450" class="gallery-img" alt="Horror Screenshot 2">
+                <img src="https://picsum.photos/id/103/800/450" class="gallery-img" alt="Horror Screenshot 3">
+            </div>
+            <p class="gallery-note">REPLACE IMAGES WITH YOUR SCREENSHOTS</p>
+        </div>
+
+    </div>
+</section>
+
+<!-- ── EASTER EGG SCRIPT SECTION ────────────────────────────── -->
+<div class="easter-full" id="easter">
+    <section class="easter-inner">
+        <div class="section-tag reveal" style="justify-content:center">chapter_04</div>
+        <div class="easter-header">
+            <div class="easter-title-row reveal reveal-delay-1">
+                <h2 class="section-title" style="margin-bottom:0">One of my scripts</h2>
+                <span class="easter-egg-badge">🥚 Easter Egg</span>
+            </div>
+            <p class="easter-subtitle reveal reveal-delay-2">
+                Copy this script, paste it into Roblox Studio's <strong style="color:var(--text)">Command Bar</strong> or a <strong style="color:var(--text)">LocalScript</strong>, and something cool happens. Try it — you won't regret it. 👇
+            </p>
+        </div>
+
+        <div class="script-box-wrap reveal reveal-delay-2">
+            <div class="script-box-header">
+                <div class="script-box-dots">
+                    <span class="dot-r"></span>
+                    <span class="dot-y"></span>
+                    <span class="dot-g"></span>
+                </div>
+                <span class="script-box-label">// MY_SCRIPT.lua — paste this in Roblox Studio</span>
+                <span></span>
+            </div>
+            <textarea class="script-textarea" id="script-content" spellcheck="false" readonly>-- ✨ Paste your Roblox script here in the website editor
+-- Visitors will see it displayed here and can copy it
+
+-- Example placeholder — replace this with YOUR real script:
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Create a cool floating label above the character
+local billboard = Instance.new("BillboardGui")
+billboard.Size = UDim2.new(0, 200, 0, 50)
+billboard.StudsOffset = Vector3.new(0, 3, 0)
+billboard.AlwaysOnTop = true
+billboard.Adornee = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+billboard.Parent = playerGui
+
+local label = Instance.new("TextLabel")
+label.Size = UDim2.fromScale(1, 1)
+label.BackgroundTransparency = 1
+label.Text = "👋 Made by @Galazyyyyyy"
+label.TextColor3 = Color3.fromRGB(168, 85, 247)
+label.TextScaled = true
+label.Font = Enum.Font.GothamBold
+label.Parent = billboard
+
+-- Animate it floating up and fading out
+local tweenInfo = TweenInfo.new(3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+TweenService:Create(billboard, tweenInfo, {StudsOffsetWorldSpace = Vector3.new(0, 8, 0)}):Play()
+TweenService:Create(label, tweenInfo, {TextTransparency = 1}):Play()
+
+task.delay(3, function()
+    billboard:Destroy()
+end)</textarea>
+
+            <div class="script-actions">
+                <button class="btn-copy-script" id="copy-script-btn">
+                    <i class="fa-regular fa-copy"></i>
+                    <span>Copy Script</span>
+                </button>
+            </div>
+
+            <div class="script-hint">
+                <span class="script-hint-icon">💡</span>
+                <div class="script-hint-text">
+                    <strong>How to use:</strong> Copy the script above → Open Roblox Studio → Press <strong>View → Command Bar</strong> and paste there, OR paste it inside a <strong>LocalScript</strong> in StarterPlayerScripts and hit Play. Watch what happens! 🎉
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- ── CONTACT ───────────────────────────────────────────────── -->
+<div class="contact-full">
+    <section id="contact" class="contact-inner">
+        <div class="section-tag reveal" style="justify-content:center">chapter_05</div>
+        <h2 class="section-title reveal reveal-delay-1">Let's build together</h2>
+        <p class="reveal reveal-delay-2" style="color:var(--muted); max-width:480px; margin:1rem auto 0; font-size:1rem; line-height:1.7; font-weight:300">
+            Need a full game, custom UI system, horror experience, or just want to collaborate? I'm always open to new projects.
+        </p>
+        <div class="contact-cards">
+
+            <!-- Discord -->
+            <a href="#" class="contact-card reveal" id="discord-card">
+                <span class="contact-card-icon">
+                    <i class="fa-brands fa-discord" style="color:#7289da"></i>
+                </span>
+                <div class="contact-card-label">Discord</div>
+                <div class="contact-card-val mono">Galazyyyyyy</div>
+                <span class="contact-card-action">Click to copy username →</span>
+            </a>
+
+            <!-- Email -->
+            <a href="mailto:Luka2006amirejibi@gmail.com" class="contact-card reveal reveal-delay-1">
+                <span class="contact-card-icon">
+                    <i class="fa-solid fa-envelope" style="color:var(--accent)"></i>
+                </span>
+                <div class="contact-card-label">Email</div>
+                <div class="contact-card-val mono" style="font-size:0.65rem">Luka2006amirejibi@gmail.com</div>
+                <span class="contact-card-action">Send me a message →</span>
+            </a>
+
+            <!-- Roblox — custom SVG icon -->
+            <a href="https://www.roblox.com/search/users?keyword=Galazyyyyyy" target="_blank" class="contact-card reveal reveal-delay-2">
+                <span class="contact-card-icon">
+                    <!--
+                        Upload your Roblox icon PNG to GitHub and replace the src below.
+                        Format: https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/roblox-icon.png
+                    -->
+                    <img
+                        src="https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/roblox-icon.png"
+                        alt="Roblox"
+                        style="width:2.5rem; height:2.5rem; object-fit:contain; filter:brightness(0.9);"
+                    >
+                </span>
+                <div class="contact-card-label">Roblox</div>
+                <div class="contact-card-val mono">@Galazyyyyyy</div>
+                <span class="contact-card-action">View profile →</span>
+            </a>
+
+        </div>
+    </section>
+</div>
+
+<!-- ── FOOTER ────────────────────────────────────────────────── -->
+<footer>
+    <span>© 2026 Luka Amirejibi · Lucas on Roblox</span>
+    <span>Built with care · Ready for GitHub Pages</span>
+</footer>
+
+<!-- ── SCRIPTS ───────────────────────────────────────────────── -->
 <script>
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-let droneOsc = null, droneGain = null, heartbeatInterval = null;
-
-function startAmbient() {
-  if (droneOsc) return;
-  droneOsc = audioCtx.createOscillator();
-  droneOsc.type = 'sawtooth'; droneOsc.frequency.value = 45;
-  const filter = audioCtx.createBiquadFilter();
-  filter.type = 'lowpass'; filter.frequency.value = 180;
-  droneGain = audioCtx.createGain(); droneGain.gain.value = 0.04;
-  droneOsc.connect(filter).connect(droneGain).connect(audioCtx.destination);
-  droneOsc.start();
-}
-
-function playStatic() {
-  const duration = 0.18;
-  const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * duration, audioCtx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-  const source = audioCtx.createBufferSource();
-  source.buffer = buffer;
-  const gain = audioCtx.createGain();
-  gain.gain.value = 0.12;
-  source.connect(gain).connect(audioCtx.destination);
-  source.start();
-}
-
-function playWarning() {
-  const osc = audioCtx.createOscillator();
-  osc.type = 'square';
-  osc.frequency.value = 700 + Math.random() * 300;
-  const gain = audioCtx.createGain();
-  gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-  osc.connect(gain).connect(audioCtx.destination);
-  osc.start(); osc.stop(audioCtx.currentTime + 0.15);
-}
-
-function playHeartbeat() {
-  const osc1 = audioCtx.createOscillator();
-  osc1.type = 'sine';
-  osc1.frequency.setValueAtTime(140, audioCtx.currentTime);
-  osc1.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.1);
-  const gain1 = audioCtx.createGain();
-  gain1.gain.setValueAtTime(0.5, audioCtx.currentTime);
-  gain1.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-  osc1.connect(gain1).connect(audioCtx.destination);
-  osc1.start(); osc1.stop(audioCtx.currentTime + 0.4);
-
-  setTimeout(() => {
-    const osc2 = audioCtx.createOscillator();
-    osc2.type = 'sine';
-    osc2.frequency.setValueAtTime(110, audioCtx.currentTime);
-    osc2.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.1);
-    const gain2 = audioCtx.createGain();
-    gain2.gain.setValueAtTime(0.35, audioCtx.currentTime);
-    gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-    osc2.connect(gain2).connect(audioCtx.destination);
-    osc2.start(); osc2.stop(audioCtx.currentTime + 0.4);
-  }, 160);
-}
-
-function startHeartbeat() {
-  if (heartbeatInterval) clearInterval(heartbeatInterval);
-  heartbeatInterval = setInterval(playHeartbeat, 900);
-}
-
-function playJumpscare() {
-  const duration = 1.1;
-  const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * duration, audioCtx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-  const noise = audioCtx.createBufferSource();
-  noise.buffer = buffer;
-  const noiseGain = audioCtx.createGain();
-  noiseGain.gain.value = 0.8;
-  noise.connect(noiseGain).connect(audioCtx.destination);
-  noise.start();
-
-  const screech = audioCtx.createOscillator();
-  screech.type = 'sawtooth';
-  screech.frequency.setValueAtTime(1300, audioCtx.currentTime);
-  screech.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + duration);
-  const screechGain = audioCtx.createGain();
-  screechGain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-  screechGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-  screech.connect(screechGain).connect(audioCtx.destination);
-  screech.start(); screech.stop(audioCtx.currentTime + duration);
-}
-
-const textEl     = document.getElementById('text');
-const ghostEl    = document.getElementById('ghost');
-const mazeEl     = document.getElementById('maze');
-const startPt    = document.getElementById('startPoint');
-const endPt      = document.getElementById('endPoint');
-const skipBtn    = document.getElementById('skipBtn');
-
-let mouse = {x: window.innerWidth / 2, y: window.innerHeight / 2};
-let lastMouse = {x: window.innerWidth / 2, y: window.innerHeight / 2};
-let lastMove = Date.now();
-let showingPanic = false;
-let gameEnded = false;
-let mazeActive = false;
-let hasWon = false;
-let tabbedOutDuringMaze = false;
-let needsRedraw = false;
-let animLoop = null;
-let walls = [];
-let baseOffscreen = null;
-let collisionOffscreen = null;
-let mazeCtx = null;
-let lastWarn = 0;
-
-const preMazeMessages = [
-  "You're still here.",
-  "Why?",
-  "Why are you not leaving me…",
-  "I don't understand.",
-  "I don't deserve you.",
-  "Im running out of time.",
-  "Why are you still here?",
-  "Stop.",
-  "It's too late to help me.",
-  "Give up."
-];
-
-const mazePleadingMessages = [
-  "You are here",
-  "Please free me",
-  "Help me",
-  "I want the pain to go away",
-  "Please don't leave me",
-  "It hurts so much",
-  "you're the only one I can rely on"
-];
-
-let currentMessages = [...preMazeMessages];
-let messageIndex = 0;
-const gameStart = Date.now();
-
-document.addEventListener('contextmenu', e => { e.preventDefault(); if (mazeActive) fail("You can't find another way."); });
-document.addEventListener('auxclick', e => { e.preventDefault(); if (mazeActive) fail("You need to help me yourself."); });
-window.addEventListener('blur', () => { if (mazeActive) tabbedOutDuringMaze = true; });
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden' && mazeActive) tabbedOutDuringMaze = true;
-  else if (document.visibilityState === 'visible' && mazeActive && tabbedOutDuringMaze) fail("Stop looking for another way.");
-});
-
-// ── Secret cheat: type LOVE anywhere to skip to ending ──
-let typed = '';
-document.addEventListener('keydown', (e) => {
-  if (e.ctrlKey || e.altKey || e.metaKey || e.key.length !== 1) return;
-  typed += e.key.toUpperCase();
-  if (typed.length > 5) typed = typed.slice(-5);
-  if (typed === 'LOVE') {
-    e.preventDefault();
-    typed = '';
-    if (!hasWon) {
-      if (heartbeatInterval) clearInterval(heartbeatInterval);
-      if (animLoop) cancelAnimationFrame(animLoop);
-      mazeActive = false;
-      gameEnded = true;
-      hasWon = true;
-      trueEnding();
-    }
-  }
-});
-
-document.addEventListener('mousemove', e => {
-  mouse.x = e.clientX;
-  mouse.y = e.clientY;
-
-  if (mazeActive && !hasWon) {
-    const dist = Math.hypot(mouse.x - lastMouse.x, mouse.y - lastMouse.y);
-    if (dist > 35) {
-      fail("You moved too fast!");
-      return;
-    }
-    const points = getLinePoints(lastMouse.x, lastMouse.y, mouse.x, mouse.y);
-    for (let p of points) {
-      if (p.x < 0 || p.x >= window.innerWidth || p.y < 0 || p.y >= window.innerHeight) continue;
-const pixel = collisionOffscreen.getContext('2d').getImageData(p.x, p.y, 1, 1).data;
-if (pixel[3] > 200 && pixel[0] < 30 && pixel[1] < 30 && pixel[2] < 30) {
-    fail("you touched the wall...");
-    return;
-}
-    }
-  }
-
-  lastMouse.x = mouse.x;
-  lastMouse.y = mouse.y;
-  lastMove = Date.now();
-
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-
-  if (showingPanic) {
-    showingPanic = false;
-    textEl.classList.remove('glitch');
-    textEl.textContent = currentMessages[messageIndex-1] || " ";
-  }
-
-  if (!mazeActive && startPt.style.display === 'block') {
-    const r = startPt.getBoundingClientRect();
-    const cx = r.left + r.width/2;
-    const cy = r.top + r.height/2;
-    if (Math.hypot(mouse.x - cx, mouse.y - cy) < 20) {
-      startPt.style.display = 'none';
-      startMazeChallenge();
-    }
-  }
-
-  if (mazeActive && !hasWon) {
-    const er = endPt.getBoundingClientRect();
-    const ex = er.left + er.width/2;
-    const ey = er.top + er.height/2;
-    if (Math.hypot(mouse.x - ex, mouse.y - ey) < 22) {
-      hasWon = true;
-      trueEnding();
-    }
-    needsRedraw = true;
-  }
-});
-
-function getLinePoints(x0, y0, x1, y1) {
-  const points = [];
-  x0 = Math.floor(x0); y0 = Math.floor(y0); x1 = Math.floor(x1); y1 = Math.floor(y1);
-  const dx = Math.abs(x1 - x0);
-  const dy = Math.abs(y1 - y0);
-  const sx = x0 < x1 ? 1 : -1;
-  const sy = y0 < y1 ? 1 : -1;
-  let err = dx - dy;
-  while (true) {
-    points.push({x: x0, y: y0});
-    if (x0 === x1 && y0 === y1) break;
-    const e2 = 2 * err;
-    if (e2 > -dy) { err -= dy; x0 += sx; }
-    if (e2 < dx) { err += dx; y0 += sy; }
-  }
-  return points;
-}
-
-setInterval(() => {
-  const elapsed = (Date.now() - gameStart)/1000;
-
-  if (!droneOsc && audioCtx.state === 'running') startAmbient();
-
-  if (messageIndex < currentMessages.length && elapsed > messageIndex * 7.5) {
-    textEl.textContent = currentMessages[messageIndex++];
-  }
-
-  if (!gameEnded && Date.now() - lastMove > 1400 && elapsed > 12) {
-    if (!showingPanic) {
-      showingPanic = true;
-      textEl.textContent = "Move...";
-      textEl.classList.add('glitch');
-    }
-  }
-
-  if (elapsed > 28 && Math.random() < 0.04) {
-    ghostEl.textContent = Math.random() < 0.4 ? "I'm still here" : "Don't Listen to it.";
-    ghostEl.style.opacity = 0.9;
-    playStatic();
-    setTimeout(() => ghostEl.style.opacity = 0, 180);
-  }
-
-  if (elapsed > 48 && Math.random() < 0.025) {
-    document.body.style.background = '#111';
-    setTimeout(() => document.body.style.background = '#000', 140);
-  }
-
-  if (elapsed > 72 && !gameEnded && !mazeActive) {
-    gameEnded = true;
-    startMazeIntro();
-  }
-}, 180);
-
-setTimeout(() => {
-  if (!mazeActive && !gameEnded) skipBtn.classList.add('visible');
-}, 4000);
-
-skipBtn.addEventListener('click', () => {
-  if (mazeActive || gameEnded) return;
-  skipBtn.style.display = 'none';
-  textEl.textContent = "…okay then.";
-  setTimeout(startMazeIntro, 800);
-});
-
-function startMazeIntro() {
-  mazeActive = false;
-  textEl.textContent = "Place your cursor over the white dot to begin.";
-  startPt.style.display = 'block';
-  startPt.style.left = '80px';
-  startPt.style.top = (window.innerHeight / 2 - 7) + 'px';
-}
-
-function drawMaze() {
-    mazeCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-    
-    // Always draw the dark maze walls first
-    mazeCtx.drawImage(baseOffscreen, 0, 0);
-
-    // Optional: subtle red glow / danger visualization when close
-    let warn = false;
-    const dangerSq  = 38 * 38;
-    const warningSq = 26 * 26;
-
-    mazeCtx.shadowColor = '#f005';
-    mazeCtx.shadowBlur  = 32;
-    mazeCtx.fillStyle   = '#c005';   // very transparent dark red
-
-    for (let wall of walls) {
-        const dx = Math.abs(mouse.x - wall.cx);
-        const dy = Math.abs(mouse.y - wall.cy);
-        if (dx > 45 || dy > 45) continue;   // early out
-
-        const distSq = dx*dx + dy*dy;
-        if (distSq < dangerSq) {
-            mazeCtx.fillRect(wall.x, wall.y, wall.w, wall.h);
-            if (distSq < warningSq) warn = true;
-        }
+    /* --- Custom Cursor (desktop only) --- */
+    const dot  = document.getElementById('cursor-dot')
+    const ring = document.getElementById('cursor-ring')
+    let mx = 0, my = 0, rx = 0, ry = 0
+    if (window.matchMedia('(pointer: fine)').matches) {
+        document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY })
+        ;(function animCursor() {
+            rx += (mx - rx) * 0.18
+            ry += (my - ry) * 0.18
+            dot.style.left  = mx + 'px'; dot.style.top  = my + 'px'
+            ring.style.left = rx + 'px'; ring.style.top = ry + 'px'
+            requestAnimationFrame(animCursor)
+        })()
+        document.querySelectorAll('a, button, .gallery-img, .lightbox-close').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                ring.style.width = '48px'; ring.style.height = '48px'
+                ring.style.borderColor = 'var(--accent)'
+            })
+            el.addEventListener('mouseleave', () => {
+                ring.style.width = '36px'; ring.style.height = '36px'
+                ring.style.borderColor = 'rgba(168,85,247,0.5)'
+            })
+        })
     }
 
-    if (warn && Date.now() - lastWarn > 420) {
-        lastWarn = Date.now();
-        playWarning();
-        navigator.vibrate?.([30, 20, 30]);
+    /* --- Mobile hamburger --- */
+    const hamburger = document.getElementById('hamburger')
+    const mobileMenu = document.getElementById('mobile-menu')
+    hamburger.addEventListener('click', () => {
+        mobileMenu.classList.toggle('open')
+    })
+    mobileMenu.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => mobileMenu.classList.remove('open'))
+    })
+
+    /* --- Scroll reveal --- */
+    const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible') })
+    }, { threshold: 0.08 })
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el))
+
+    /* --- Counter animation --- */
+    const counters = document.querySelectorAll('[data-target]')
+    const cObs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (!e.isIntersecting) return
+            const el = e.target
+            const target = +el.dataset.target
+            const suffix = el.dataset.suffix || (el.dataset.target == 100 ? '%' : '+')
+            let start = 0
+            const step = target / 50
+            const int = setInterval(() => {
+                start = Math.min(start + step, target)
+                el.textContent = Math.floor(start) + suffix
+                if (start >= target) clearInterval(int)
+            }, 30)
+            cObs.unobserve(el)
+        })
+    }, { threshold: 0.5 })
+    counters.forEach(c => { c.dataset.suffix = c.dataset.target == 100 ? '%' : '+'; cObs.observe(c) })
+
+    /* --- Lightbox --- */
+    const lb    = document.getElementById('lightbox')
+    const lbImg = document.getElementById('lightbox-img')
+    const lbX   = document.getElementById('lightbox-close')
+    document.querySelectorAll('.gallery-img').forEach(img => {
+        img.addEventListener('click', () => {
+            lbImg.src = img.src; lb.classList.add('open')
+        })
+    })
+    lbX.addEventListener('click', () => lb.classList.remove('open'))
+    lb.addEventListener('click', e => { if (e.target === lb) lb.classList.remove('open') })
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('open') })
+
+    /* --- Toast helper --- */
+    function showToast(msg, isEgg) {
+        const t = document.getElementById('toast')
+        document.getElementById('toast-msg').textContent = msg
+        t.style.borderColor = isEgg ? 'rgba(248,113,113,0.4)' : 'rgba(168,85,247,0.3)'
+        t.classList.add('show')
+        setTimeout(() => t.classList.remove('show'), 2800)
     }
-}
-function anim() {
-  animLoop = requestAnimationFrame(anim);
-  if (!mazeActive || hasWon || !needsRedraw) return;
-  needsRedraw = false;
-  drawMaze();
-}
 
-function startMazeChallenge() {
-  mazeActive = true;
-  hasWon = false;
-  tabbedOutDuringMaze = false;
-  startHeartbeat();
+    /* --- Discord copy --- */
+    document.getElementById('discord-card').addEventListener('click', e => {
+        e.preventDefault()
+        navigator.clipboard.writeText('Galazyyyyyy').then(() => showToast('Discord username copied!'))
+    })
 
-  // ── Changed: we no longer use a fixed index for messages ──
-  // Instead we'll pick a random pleading message every ~4–12 seconds
-  currentMessages = [...mazePleadingMessages];  // keep the array for reference
+    /* --- Script copy button --- */
+    const copyBtn = document.getElementById('copy-script-btn')
+    copyBtn.addEventListener('click', () => {
+        const text = document.getElementById('script-content').value
+        navigator.clipboard.writeText(text).then(() => {
+            copyBtn.classList.add('copied')
+            copyBtn.querySelector('span').textContent = 'Copied! Now paste in Studio 🎉'
+            copyBtn.querySelector('i').className = 'fa-solid fa-check'
+            showToast('Script copied! Paste it in Roblox Studio 🚀', true)
+            setTimeout(() => {
+                copyBtn.classList.remove('copied')
+                copyBtn.querySelector('span').textContent = 'Copy Script'
+                copyBtn.querySelector('i').className = 'fa-regular fa-copy'
+            }, 3000)
+        })
+    })
 
-  // Initial message
-  textEl.textContent = currentMessages[Math.floor(Math.random() * currentMessages.length)];
-
-  // Start cycling messages randomly while maze is active
-  const messageCycleInterval = setInterval(() => {
-    if (!mazeActive || hasWon) {
-      clearInterval(messageCycleInterval);
-      return;
-    }
-    const randomMsg = currentMessages[Math.floor(Math.random() * currentMessages.length)];
-    textEl.textContent = randomMsg;
-
-    // Optional: tiny glitch effect when message changes
-    textEl.classList.add('glitch');
-    setTimeout(() => textEl.classList.remove('glitch'), 800);
-  }, 4000 + Math.random() * 8000);   // changes every 4–12 seconds
-
-  mazeEl.style.display = 'block';
-  mazeEl.width = window.innerWidth;
-  mazeEl.height = window.innerHeight;
-  mazeCtx = mazeEl.getContext('2d');
-
-  endPt.style.display = 'block';
-  endPt.classList.add('pulse');
-  endPt.style.left = (window.innerWidth - 100) + 'px';
-  endPt.style.top  = (window.innerHeight / 2 - 7) + 'px';
-
-  // ── rest of the maze generation code remains unchanged ──
-  const cell = 12.69;
-  const wallThickness = 1;
-  const safeRadius = 22;
-
-  const W = window.innerWidth;
-  const H = window.innerHeight;
-  const cols = Math.ceil(W / cell);
-  const rows = Math.ceil(H / cell);
-
-  const startX = 80 + 7;
-  const startY = H / 2;
-  const endX = W - 100 + 7;
-  const endY = H / 2;
-
-  const grid = Array.from({length: rows}, () => Array(cols).fill(null).map(() => ({n:1,e:1,s:1,w:1,visited:false})));
-
-  let current = {r: Math.floor(rows/2), c: 1};
-  grid[current.r][current.c].visited = true;
-  const stack = [current];
-
-  while (stack.length) {
-    const {r, c} = current;
-    const neighbors = [];
-    if (r > 0 && !grid[r-1][c].visited) neighbors.push({r:r-1,c,dir:'n'});
-    if (r < rows-1 && !grid[r+1][c].visited) neighbors.push({r:r+1,c,dir:'s'});
-    if (c > 0 && !grid[r][c-1].visited) neighbors.push({r,c:c-1,dir:'w'});
-    if (c < cols-1 && !grid[r][c+1].visited) neighbors.push({r,c:c+1,dir:'e'});
-
-    if (neighbors.length) {
-      const next = neighbors[Math.floor(Math.random() * neighbors.length)];
-      if (next.dir === 'n') { grid[r][c].n = 0; grid[next.r][next.c].s = 0; }
-      if (next.dir === 's') { grid[r][c].s = 0; grid[next.r][next.c].n = 0; }
-      if (next.dir === 'w') { grid[r][c].w = 0; grid[next.r][next.c].e = 0; }
-      if (next.dir === 'e') { grid[r][c].e = 0; grid[next.r][next.c].w = 0; }
-      current = {r: next.r, c: next.c};
-      grid[current.r][current.c].visited = true;
-      stack.push(current);
-    } else {
-      current = stack.pop();
-    }
-  }
-
-  if (cols > 3) {
-    grid[Math.floor(rows/2)][1].w = 0;
-    grid[Math.floor(rows/2)][cols-2].e = 0;
-  }
-
-  walls = [];
-
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const item = grid[r][c];
-      const x = c * cell;
-      const y = r * cell;
-      if (item.n || r===0)               createWall(x, r===0?0:y, cell, wallThickness);
-      if (item.w && c>0)                 createWall(x, y, wallThickness, cell);
-      if (item.s || r===rows-1)          createWall(x, y+cell-wallThickness, cell, wallThickness);
-      if (item.e && c<cols-1)            createWall(x+cell-wallThickness, y, wallThickness, cell);
-    }
-  }
-
-  for (let c = 0; c < cols; c++) {
-    createWall(c*cell, 0, cell, wallThickness);
-    createWall(c*cell, H-wallThickness, cell, wallThickness);
-  }
-
-  function createWall(x, y, w, h) {
-    const cx = x + w / 2;
-    const cy = y + h / 2;
-    if (Math.hypot(cx - startX, cy - startY) < safeRadius || Math.hypot(cx - endX, cy - endY) < safeRadius) return;
-    walls.push({x, y, w, h, cx, cy});
-  }
-
-  baseOffscreen = document.createElement('canvas');
-  baseOffscreen.width = W;
-  baseOffscreen.height = H;
-  const baseCtx = baseOffscreen.getContext('2d');
-  baseCtx.fillStyle = '#0a0a0a';
-  baseCtx.shadowColor = '#000';
-  baseCtx.shadowBlur = 8;
-  for (let wall of walls) {
-    baseCtx.fillRect(wall.x, wall.y, wall.w, wall.h);
-  }
-
-  collisionOffscreen = document.createElement('canvas');
-  collisionOffscreen.width = W;
-  collisionOffscreen.height = H;
-  const collisionCtx = collisionOffscreen.getContext('2d');
-  collisionCtx.fillStyle = 'black';
-  for (let wall of walls) {
-    collisionCtx.fillRect(wall.x, wall.y, wall.w, wall.h);
-  }
-
-  needsRedraw = true;
-  anim();
-}
-
-function fail(msg = "you left me..\nat least you tried...") {
-  mazeActive = false;
-  if (heartbeatInterval) clearInterval(heartbeatInterval);
-  ghostEl.textContent = msg;
-  ghostEl.style.opacity = 1;
-  ghostEl.style.fontSize = '50px';
-  textEl.textContent = "";
-  playJumpscare();
-  setTimeout(() => location.reload(), 2200);
-}
-
-function trueEnding() {
-  mazeActive = false;
-  hasWon = true;
-  if (heartbeatInterval) clearInterval(heartbeatInterval);
-  if (animLoop) cancelAnimationFrame(animLoop);
-
-  mazeEl.style.display = 'none';
-  startPt.style.display = 'none';
-  endPt.style.display = 'none';
-  ghostEl.style.display = 'none';
-  document.getElementById('vignette')?.remove();
-  document.getElementById('noise')?.remove();
-  document.getElementById('container')?.remove();
-  skipBtn.remove();
-
-  document.body.style.cssText = `
-    background: #000 !important;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Courier New', Courier, monospace;
-  `;
-
-  const finalMsg = document.createElement('div');
-  finalMsg.style.cssText = `
-    color: #e0e0e0;
-    font-size: clamp(28px, 5.8vw, 54px);
-    text-align: center;
-    line-height: 1.45;
-    letter-spacing: 1.5px;
-    text-shadow: 0 0 16px rgba(255,255,255,0.15);
-    max-width: 92vw;
-    padding: 5vh 4vw;
-    user-select: none;
-    pointer-events: none;
-  `;
-
-  finalMsg.innerHTML = "--- / .-. ..- -... -.- / . ..- .- --..-- / --- / -.-. --- -.-- -. / -.-. -.- / -.-. -.- -..- -.- / ... ..- -..- -.- / --.. -. --. - / .--. .- -.-- --.. / .-.. -..- --- -.- - .--- -.-- .-.-.- / --- / .. --. - .----. --.. / .-. --- -... -.- / -.-. --- --.. -. ..- .- --.. / . ..- .- / --- - / ... . / .-. --- .-.. -.- .-.-.-<br><br>PS: Suck Suck my Penis";
-
-  document.body.appendChild(finalMsg);
-
-  finalMsg.style.opacity = '0';
-  finalMsg.style.transition = 'opacity 9s ease-in';
-  setTimeout(() => {
-    finalMsg.style.opacity = '1';
-  }, 400);
-}
-
-function updateTextFollow() {
-  const dx = (mouse.x - window.innerWidth/2) * 0.018;
-  const dy = (mouse.y - window.innerHeight/2) * 0.018;
-  textEl.style.transform = `translate(${dx}px, ${dy}px)`;
-  requestAnimationFrame(updateTextFollow);
-}
-updateTextFollow();
+    /* --- Smooth scroll --- */
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+        a.addEventListener('click', e => {
+            const target = a.getAttribute('href')
+            if (target === '#') return
+            const t = document.querySelector(target)
+            if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }) }
+        })
+    })
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-

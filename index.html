@@ -877,7 +877,7 @@
     <div class="section-tag reveal">chapter_03</div>
     <h2 class="section-title reveal reveal-delay-1">Recent creations</h2>
     <p class="reveal reveal-delay-2" style="color:var(--muted); font-size:0.9rem; max-width:380px; margin-top:0.5rem; line-height:1.7">
-        Videos + screenshots of my latest work. Swap in your real YouTube IDs and screenshots below.
+        Videos + screenshots of my latest work.
     </p>
 
     <div class="project-grid">
@@ -965,41 +965,199 @@
                 <span class="script-box-label">// MY_SCRIPT.lua — paste this in Roblox Studio</span>
                 <span></span>
             </div>
-            <textarea class="script-textarea" id="script-content" spellcheck="false" readonly>-- ✨ Paste your Roblox script here in the website editor
--- Visitors will see it displayed here and can copy it
-
--- Example placeholder — replace this with YOUR real script:
-local Players = game:GetService("Players")
+            <textarea class="script-textarea" id="script-content" spellcheck="false" readonly> local Players      = game:GetService("Players")
+local Debris       = game:GetService("Debris")
+local Chat         = game:GetService("Chat")
 local TweenService = game:GetService("TweenService")
 
-local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+local player   = Players.LocalPlayer
+local char     = player.Character or player.CharacterAdded:Wait()
+local humanoid = char:WaitForChild("Humanoid")
+local hrp      = char:WaitForChild("HumanoidRootPart")
 
--- Create a cool floating label above the character
-local billboard = Instance.new("BillboardGui")
-billboard.Size = UDim2.new(0, 200, 0, 50)
-billboard.StudsOffset = Vector3.new(0, 3, 0)
-billboard.AlwaysOnTop = true
-billboard.Adornee = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-billboard.Parent = playerGui
+local FART_SOUNDS = {
+	"rbxassetid://7653502977",
+	"rbxassetid://9062313304",
+	"rbxassetid://6717089252",
+	"rbxassetid://71710465003189",
+}
 
-local label = Instance.new("TextLabel")
-label.Size = UDim2.fromScale(1, 1)
-label.BackgroundTransparency = 1
-label.Text = "👋 Made by @Galazyyyyyy"
-label.TextColor3 = Color3.fromRGB(168, 85, 247)
-label.TextScaled = true
-label.Font = Enum.Font.GothamBold
-label.Parent = billboard
+local MESSAGES = {
+	"WHY DID THAT COME FROM ME",
+	"IT WASN'T ME I SWEAR ON MY LIFE",
+	"FORGIVE ME FATHER FOR I HAVE SINNED",
+	"WHO TORE ASS??? (it was me)",
+	"MY DEEPEST APOLOGIES",
+	"THIS SERVER HAS BEEN CONDEMNED",
+	"NAHHH THAT WAS ABSOLUTELY FOUL",
+	"I AM SO SORRY EVERYONE PLEASE EVACUATE",
+	"I EAT ONCE AND THIS HAPPENS",
+	"MEDICAL EMERGENCY. POSSIBLY.",
+	"OKAY THAT ONE SURPRISED EVEN ME",
+	"THE PROPHECY HAS BEEN FULFILLED",
+	"NO NO NO NO NO NO NO",
+	"I HAVE BROUGHT DISHONOR UPON MY FAMILY",
+	"THAT WAS A WARNING SHOT",
+	"SCIENTISTS ARE BAFFLED",
+	"THIS IS NOT A DRILL",
+	"GOD HAS ABANDONED THIS SERVER",
+}
 
--- Animate it floating up and fading out
-local tweenInfo = TweenInfo.new(3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-TweenService:Create(billboard, tweenInfo, {StudsOffsetWorldSpace = Vector3.new(0, 8, 0)}):Play()
-TweenService:Create(label, tweenInfo, {TextTransparency = 1}):Play()
+local YEET_PRESETS = {
+	{ vel = function() return Vector3.new(math.random(-120,120), math.random(80,160),  math.random(-120,120)) end },
+	{ vel = function() return Vector3.new(math.random(-20,20),   math.random(200,350), math.random(-20,20))   end },
+	{ vel = function() return Vector3.new(math.random(-300,300), math.random(10,30),   math.random(-300,300)) end },
+	{ vel = function() return Vector3.new(math.random(-200,200), math.random(50,100),  math.random(-200,200)) end },
+}
 
-task.delay(3, function()
-    billboard:Destroy()
-end)</textarea>
+local fartCount   = 0
+local isRagdolled = false
+local savedMotors = {}
+
+local function enableRagdoll()
+	humanoid.PlatformStand = true
+	humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+
+	for _, motor in ipairs(char:GetDescendants()) do
+		if motor:IsA("Motor6D") and motor.Part0 and motor.Part1 then
+			table.insert(savedMotors, motor)
+
+			local att0 = Instance.new("Attachment")
+			att0.CFrame = motor.C0
+			att0.Name   = "RagdollAtt0"
+			att0.Parent = motor.Part0
+
+			local att1 = Instance.new("Attachment")
+			att1.CFrame = motor.C1
+			att1.Name   = "RagdollAtt1"
+			att1.Parent = motor.Part1
+
+			local bsc = Instance.new("BallSocketConstraint")
+			bsc.Name               = "RagdollBSC"
+			bsc.Attachment0        = att0
+			bsc.Attachment1        = att1
+			bsc.LimitsEnabled      = true
+			bsc.TwistLimitsEnabled = true
+			bsc.UpperAngle         = 60
+			bsc.TwistUpperAngle    = 45
+			bsc.TwistLowerAngle    = -45
+			bsc.Parent             = motor.Part0
+
+			motor.Enabled = false
+		end
+	end
+end
+
+local function disableRagdoll()
+	for _, desc in ipairs(char:GetDescendants()) do
+		if desc.Name == "RagdollBSC"
+			or desc.Name == "RagdollAtt0"
+			or desc.Name == "RagdollAtt1"
+		then
+			desc:Destroy()
+		end
+	end
+
+	for _, motor in ipairs(savedMotors) do
+		if motor and motor.Parent then
+			motor.Enabled = true
+		end
+	end
+	table.clear(savedMotors)
+
+	humanoid.PlatformStand = false
+	humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+end
+
+local function playFart()
+	local sound = Instance.new("Sound")
+	sound.SoundId            = FART_SOUNDS[math.random(#FART_SOUNDS)]
+	sound.Volume             = 10
+	sound.PlaybackSpeed      = math.random(75, 130) / 100
+	sound.RollOffMaxDistance = 999
+	sound.Parent             = hrp
+	sound:Play()
+	Debris:AddItem(sound, 4)
+end
+
+local function spawnFartCloud()
+	local cloud = Instance.new("Part")
+	cloud.Size         = Vector3.new(3, 3, 3)
+	cloud.Shape        = Enum.PartType.Ball
+	cloud.Material     = Enum.Material.Neon
+	cloud.Color        = Color3.fromRGB(120, 200, 80)
+	cloud.Anchored     = true
+	cloud.CanCollide   = false
+	cloud.Transparency = 0.4
+	cloud.CFrame       = hrp.CFrame * CFrame.new(0, -2, 0)
+	cloud.Parent       = workspace
+
+	TweenService:Create(cloud, TweenInfo.new(1.5, Enum.EasingStyle.Quad), {
+		Size         = Vector3.new(10, 10, 10),
+		Transparency = 1,
+		Position     = cloud.Position + Vector3.new(0, 4, 0),
+	}):Play()
+
+	Debris:AddItem(cloud, 1.6)
+end
+
+local function ragdollFartYeet()
+	if isRagdolled then return end
+	isRagdolled = true
+	fartCount  += 1
+
+	local preset = YEET_PRESETS[math.random(#YEET_PRESETS)]
+	local msg    = MESSAGES[math.random(#MESSAGES)]
+
+	Chat:Chat(char:WaitForChild("Head"), msg, Enum.ChatColor.Red)
+	playFart()
+	spawnFartCloud()
+	enableRagdoll()
+
+	local bv = Instance.new("BodyVelocity")
+	bv.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+	bv.Velocity = preset.vel()
+	bv.Parent   = hrp
+
+	local ba = Instance.new("BodyAngularVelocity")
+	ba.MaxTorque       = Vector3.new(1e5, 1e5, 1e5)
+	ba.AngularVelocity = Vector3.new(
+		math.random(-25, 25),
+		math.random(-25, 25),
+		math.random(-25, 25)
+	)
+	ba.Parent = hrp
+
+	task.delay(0.45, function()
+		bv:Destroy()
+		ba:Destroy()
+	end)
+
+	task.delay(2.8, function()
+		disableRagdoll()
+		isRagdolled = false
+	end)
+
+	local milestones = {
+		[10]  = { "10 FARTS. I AM UNSTOPPABLE.",     Enum.ChatColor.Green },
+		[25]  = { "25 FARTS. THIS IS MY LEGACY.",     Enum.ChatColor.Blue  },
+		[50]  = { "50 FARTS. SOMEBODY STOP ME.",      Enum.ChatColor.Red   },
+		[100] = { "100 FARTS. I HAVE TRANSCENDED.",   Enum.ChatColor.White },
+	}
+	if milestones[fartCount] then
+		local m = milestones[fartCount]
+		task.delay(0.1, function()
+			Chat:Chat(char:WaitForChild("Head"), m[1], m[2])
+		end)
+	end
+end
+
+while true do
+	task.wait(math.random(5, 9))
+	if humanoid and humanoid.Health > 0 then
+		ragdollFartYeet()
+	end
+end </textarea>
 
             <div class="script-actions">
                 <button class="btn-copy-script" id="copy-script-btn">
@@ -1025,6 +1183,7 @@ end)</textarea>
         <h2 class="section-title reveal reveal-delay-1">Let's build together</h2>
         <p class="reveal reveal-delay-2" style="color:var(--muted); max-width:480px; margin:1rem auto 0; font-size:1rem; line-height:1.7; font-weight:300">
             Need a full game, custom UI system, horror experience, or just want to collaborate? I'm always open to new projects.
+            Currently Working in a team of 4, with amazing modeleres and animators, as well as an investor! 
         </p>
         <div class="contact-cards">
 
@@ -1196,6 +1355,7 @@ end)</textarea>
 </script>
 </body>
 </html>
+
 
 
 
